@@ -223,7 +223,7 @@ export default async function DashboardPage() {
               >
                 <div className="min-w-0 flex items-center gap-2">
                   {project.featured && (
-                    <Star size={10} className="text-amber-400 shrink-0" title="Featured" />
+                    <Star size={10} className="text-amber-400 shrink-0" aria-label="Featured" />
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-white truncate group-hover:text-primary transition-colors">

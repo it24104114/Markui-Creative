@@ -11,7 +11,7 @@ interface MediaItem {
   url: string;
   filename: string;
   format: string;
-  bytes: number;
+  bytes: number | null;
   width: number | null;
   height: number | null;
   alt: string | null;
@@ -178,7 +178,7 @@ export function MediaLibraryClient({ initial }: MediaLibraryClientProps) {
                 ) : (
                   <>
                     <p className="text-xs text-white truncate font-medium">{item.filename}</p>
-                    <p className="text-xs text-text-subtle mt-0.5">{formatBytes(item.bytes)}</p>
+                    <p className="text-xs text-text-subtle mt-0.5">{item.bytes != null ? formatBytes(item.bytes) : '—'}</p>
                   </>
                 )}
               </div>
