@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
 import { ProjectsClient } from './ProjectsClient';
 import type { Metadata } from 'next';
@@ -11,7 +12,11 @@ export const revalidate = 60;
 
 export default async function ProjectsPage() {
   if (!process.env.DATABASE_URL) {
-    return <ProjectsClient initialProjects={[]} categories={[]} total={0} />;
+    return (
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <ProjectsClient initialProjects={[]} categories={[]} total={0} />
+      </Suspense>
+    );
   }
 
   try {
@@ -28,17 +33,23 @@ export default async function ProjectsPage() {
     ]);
 
     return (
-      <ProjectsClient
-        initialProjects={projects}
-        categories={categories}
-        total={projects.length}
-      />
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <ProjectsClient
+          initialProjects={projects}
+          categories={categories}
+          total={projects.length}
+        />
+      </Suspense>
     );
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Failed to load projects page data:', error);
     }
 
-    return <ProjectsClient initialProjects={[]} categories={[]} total={0} />;
+    return (
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <ProjectsClient initialProjects={[]} categories={[]} total={0} />
+      </Suspense>
+    );
   }
 }
