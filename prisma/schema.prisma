@@ -1,0 +1,192 @@
+// Prisma Schema — Mark UI Creative Portfolio
+// Generated for PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(ADMIN)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────
+// PORTFOLIO
+// ─────────────────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  color       String?
+  projects    Project[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  categoryId  String
+  clientName  String?
+  description String        @db.Text
+  objective   String?       @db.Text
+  process     String?       @db.Text
+  results     String?       @db.Text
+  coverImage  String
+  featured    Boolean       @default(false)
+  sortOrder   Int           @default(0)
+  status      ProjectStatus @default(DRAFT)
+  views       Int           @default(0)
+  year        Int?
+  tags        String[]
+  media       Media[]
+  category    Category      @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+  @@index([featured])
+  @@index([categoryId])
+  @@map("projects")
+}
+
+model Media {
+  id         String    @id @default(cuid())
+  url        String
+  publicId   String    @unique
+  filename   String
+  format     String
+  width      Int?
+  height     Int?
+  bytes      Int?
+  alt        String?
+  caption    String?
+  sortOrder  Int       @default(0)
+  projectId  String?
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([projectId])
+  @@map("media")
+}
+
+// ─────────────────────────────────────────────
+// LEADS / CONTACT
+// ─────────────────────────────────────────────
+
+model Lead {
+  id        String     @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  service   String?
+  message   String     @db.Text
+  status    LeadStatus @default(NEW)
+  notes     String?    @db.Text
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([status])
+  @@map("leads")
+}
+
+// ─────────────────────────────────────────────
+// SITE SETTINGS
+// ─────────────────────────────────────────────
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  CONVERTED
+  CLOSED
+}
