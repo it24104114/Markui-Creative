@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
-interface Params { params: { id: string } }
+interface Params { params: Promise<{ id: string }> }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -14,13 +15,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     if (slug) {
       const existing = await prisma.category.findFirst({
-        where: { slug, NOT: { id: params.id } },
+        where: { slug, NOT: { id } },
       });
       if (existing) return NextResponse.json({ error: 'Slug already exists' }, { status: 409 });
     }
 
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(name && { name }),
         ...(slug && { slug }),
@@ -35,11 +36,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    await prisma.category.delete({ where: { id: params.id } });
+    await prisma.category.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Category not found' }, { status: 404 });

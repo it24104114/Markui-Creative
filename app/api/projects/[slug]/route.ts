@@ -4,17 +4,18 @@ import { auth } from '@/auth';
 import { projectSchema } from '@/lib/validations';
 
 interface RouteParams {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
+    const { slug } = await params;
     const session = await auth();
     const isAdmin = !!session;
 
     const project = await prisma.project.findUnique({
       where: {
-        slug: params.slug,
+        slug,
         ...(!isAdmin && { status: 'PUBLISHED' }),
       },
       include: {
@@ -43,10 +44,11 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
+    const { slug } = await params;
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const existing = await prisma.project.findUnique({ where: { slug: params.slug } });
+    const existing = await prisma.project.findUnique({ where: { slug } });
     if (!existing) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
     const body = await req.json();
@@ -69,10 +71,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
+    const { slug } = await params;
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const existing = await prisma.project.findUnique({ where: { slug: params.slug } });
+    const existing = await prisma.project.findUnique({ where: { slug } });
     if (!existing) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
     await prisma.project.delete({ where: { id: existing.id } });

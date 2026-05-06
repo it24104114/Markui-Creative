@@ -4,22 +4,23 @@ import { cloudinary } from '@/lib/cloudinary';
 import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const media = await prisma.media.findUnique({ where: { id: params.id } });
+    const media = await prisma.media.findUnique({ where: { id } });
     if (!media) return NextResponse.json({ error: 'Media not found' }, { status: 404 });
 
     // Delete from Cloudinary
     await cloudinary.uploader.destroy(media.publicId);
 
     // Delete from DB
-    await prisma.media.delete({ where: { id: params.id } });
+    await prisma.media.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Media deleted successfully' });
   } catch {
@@ -29,6 +30,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -36,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const { alt, caption, projectId, sortOrder } = body;
 
     const media = await prisma.media.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(alt !== undefined && { alt }),
         ...(caption !== undefined && { caption }),

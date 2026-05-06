@@ -6,12 +6,13 @@ import { ArrowLeft, ArrowUpRight, Eye } from 'lucide-react';
 import type { Metadata } from 'next';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
   const project = await prisma.project.findUnique({
-    where: { slug: params.slug, status: 'PUBLISHED' },
+    where: { slug, status: 'PUBLISHED' },
     select: { title: true, description: true, coverImage: true },
   });
   if (!project) return { title: 'Project Not Found' };
@@ -36,8 +37,9 @@ export async function generateStaticParams() {
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {
+  const { slug } = await params;
   const project = await prisma.project.findUnique({
-    where: { slug: params.slug, status: 'PUBLISHED' },
+    where: { slug, status: 'PUBLISHED' },
     include: {
       category: true,
       media: { orderBy: { sortOrder: 'asc' } },

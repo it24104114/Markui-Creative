@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -15,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const { status, notes } = body;
 
     const lead = await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(status && { status }),
         ...(notes !== undefined && { notes }),
@@ -30,10 +31,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    await prisma.lead.delete({ where: { id: params.id } });
+    await prisma.lead.delete({ where: { id } });
     return NextResponse.json({ message: 'Lead deleted' });
   } catch {
     return NextResponse.json({ error: 'Failed to delete lead' }, { status: 500 });
