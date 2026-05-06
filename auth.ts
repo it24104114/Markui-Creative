@@ -4,10 +4,12 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { loginSchema } from '@/lib/validations';
 import bcrypt from 'bcryptjs';
+import { authConfig } from './auth.config';
 
 const authSecret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || (process.env.NODE_ENV === 'development' ? 'markui-dev-auth-secret-change-in-production' : undefined);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   secret: authSecret,
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
