@@ -107,11 +107,19 @@ export function Footer() {
           <p className="text-xs text-text-subtle">
             © {new Date().getFullYear()} Mark UI Creative. All rights reserved.
           </p>
-          <p className="text-xs text-text-subtle">
-            Crafted with{' '}
-            <span className="text-primary">♥</span>
-            {' '}in Sri Lanka
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-xs text-text-subtle">
+              Crafted with{' '}
+              <span className="text-primary">♥</span>
+              {' '}in Sri Lanka
+            </p>
+            <Link
+              href="/admin/login"
+              className="text-xs text-text-subtle hover:text-white transition-colors duration-200"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
