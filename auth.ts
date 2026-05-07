@@ -5,7 +5,14 @@ import { loginSchema } from '@/lib/validations';
 import bcrypt from 'bcryptjs';
 import { authConfig } from './auth.config';
 
-const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? (process.env.NODE_ENV === 'development' ? 'markui-dev-auth-secret-change-in-production' : undefined);
+const firstNonEmpty = (...values: Array<string | undefined>) =>
+  values.find((value) => typeof value === 'string' && value.trim().length > 0);
+
+const authSecret =
+  firstNonEmpty(process.env.AUTH_SECRET, process.env.NEXTAUTH_SECRET) ??
+  (process.env.NODE_ENV === 'development'
+    ? 'markui-dev-auth-secret-change-in-production'
+    : undefined);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
