@@ -22,22 +22,35 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-        callbackUrl: '/admin/dashboard',
-      });
+      const result = await Promise.race([
+        signIn('credentials', {
+          email: data.email,
+          password: data.password,
+          redirect: false,
+          callbackUrl: '/admin/dashboard',
+        }),
+        new Promise<null>((_, reject) => {
+          setTimeout(() => reject(new Error('AUTH_TIMEOUT')), 12000);
+        }),
+      ]);
 
       if (!result || result.error || !result.ok) {
-        setError('Invalid email or password.');
+        if (result?.error === 'Configuration') {
+          setError('Auth service is not configured on the server. Please check Vercel env vars.');
+        } else {
+          setError('Invalid email or password.');
+        }
         return;
       }
 
       // Use NextAuth's resolved callback URL so host and basePath are respected.
       window.location.href = result.url ?? '/admin/dashboard';
-    } catch {
-      setError('Sign in failed. Please try again.');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'AUTH_TIMEOUT') {
+        setError('Sign in timed out. The auth API may be down.');
+      } else {
+        setError('Sign in failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
