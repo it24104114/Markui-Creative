@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { cloudinary } from '@/lib/cloudinary';
+import { cloudinary, getCloudinaryConfigError, hasCloudinaryConfig } from '@/lib/cloudinary';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    if (!hasCloudinaryConfig()) {
+      return NextResponse.json({ error: getCloudinaryConfigError() }, { status: 500 });
+    }
 
     const formData = await req.formData();
     const files = formData.getAll('files') as File[];
@@ -63,7 +67,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get('projectId');
     const page = parseInt(searchParams.get('page') ?? '1');
+    const limit = searchParams.get('limit');
     const pageSize = Math.min(parseInt(searchParams.get('pageSize') ?? '24'), 100);
+    const take = limit ? Math.min(parseInt(limit), 200) : pageSize;
 
     const where = projectId ? { projectId } : {};
 
@@ -72,12 +78,12 @@ export async function GET(req: NextRequest) {
         where,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
-        take: pageSize,
+        take,
       }),
       prisma.media.count({ where }),
     ]);
 
-    return NextResponse.json({ data: media, total, page, pageSize, totalPages: Math.ceil(total / pageSize) });
+    return NextResponse.json({ data: media, media, total, page, pageSize: take, totalPages: Math.ceil(total / take) });
   } catch {
     return NextResponse.json({ error: 'Failed to fetch media' }, { status: 500 });
   }

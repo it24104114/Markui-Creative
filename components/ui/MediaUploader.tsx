@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
+import { Upload, X, Loader2, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { cn, formatBytes } from '@/lib/utils';
 
@@ -23,11 +23,51 @@ interface MediaUploaderProps {
   className?: string;
 }
 
+interface ExistingMediaItem {
+  id: string;
+  url: string;
+  filename: string;
+  bytes?: number | null;
+}
+
 export function MediaUploader({ projectId, onUploadComplete, maxFiles = 20, className }: MediaUploaderProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [existingMedia, setExistingMedia] = useState<ExistingMediaItem[]>([]);
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    let isMounted = true;
+
+    const loadExistingMedia = async () => {
+      try {
+        const response = await fetch(`/api/media?projectId=${projectId}&pageSize=100`);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error ?? 'Failed to load project media');
+        }
+
+        if (isMounted) {
+          setExistingMedia(data.data ?? []);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError(err.message ?? 'Failed to load project media');
+        }
+      }
+    };
+
+    loadExistingMedia();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    setError('');
     const newFiles: UploadFile[] = acceptedFiles.map((file) => ({
       id: Math.random().toString(36).slice(2),
       file,
@@ -58,6 +98,7 @@ export function MediaUploader({ projectId, onUploadComplete, maxFiles = 20, clas
     if (!pendingFiles.length) return;
 
     setIsUploading(true);
+    setError('');
 
     const formData = new FormData();
     pendingFiles.forEach((f) => formData.append('files', f.file));
@@ -81,8 +122,11 @@ export function MediaUploader({ projectId, onUploadComplete, maxFiles = 20, clas
         }),
       );
 
+      setExistingMedia((prev) => [...data.data, ...prev]);
+
       onUploadComplete?.(data.data);
-    } catch {
+    } catch (err: any) {
+      setError(err.message ?? 'Upload failed');
       setFiles((prev) =>
         prev.map((f) => (f.status === 'uploading' ? { ...f, status: 'error' } : f)),
       );
@@ -95,6 +139,38 @@ export function MediaUploader({ projectId, onUploadComplete, maxFiles = 20, clas
 
   return (
     <div className={cn('space-y-4', className)}>
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg px-4 py-3">
+          {error}
+        </p>
+      )}
+
+      {existingMedia.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold text-white">Saved To This Project</h4>
+            <span className="text-xs text-text-subtle">{existingMedia.length} item{existingMedia.length === 1 ? '' : 's'}</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {existingMedia.map((item) => (
+              <div key={item.id} className="relative rounded-lg overflow-hidden bg-surface border border-border aspect-square">
+                <Image
+                  src={item.url}
+                  alt={item.filename}
+                  fill
+                  className="object-cover"
+                  sizes="200px"
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-background/90 to-transparent p-2">
+                  <p className="text-xs text-white truncate">{item.filename}</p>
+                  <p className="text-xs text-text-subtle">{item.bytes != null ? formatBytes(item.bytes) : 'Saved'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Drop Zone */}
       <div
         {...getRootProps()}

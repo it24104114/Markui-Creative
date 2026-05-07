@@ -1,5 +1,20 @@
 import { v2 as cloudinary } from 'cloudinary';
 
+function isPlaceholder(value: string | undefined) {
+  if (!value) return true;
+  return value.startsWith('your-');
+}
+
+export function hasCloudinaryConfig() {
+  return !isPlaceholder(process.env.CLOUDINARY_CLOUD_NAME)
+    && !isPlaceholder(process.env.CLOUDINARY_API_KEY)
+    && !isPlaceholder(process.env.CLOUDINARY_API_SECRET);
+}
+
+export function getCloudinaryConfigError() {
+  return 'Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.';
+}
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
