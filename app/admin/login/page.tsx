@@ -2,9 +2,8 @@
 
 export const dynamic = 'force-dynamic';
 
-import { signIn, useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormValues } from '@/lib/validations';
@@ -13,14 +12,6 @@ import { Loader2, Lock } from 'lucide-react';
 export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      router.replace('/admin/dashboard');
-    }
-  }, [status, router]);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,10 +32,6 @@ export default function AdminLoginPage() {
       window.location.href = '/admin/dashboard';
     }
   };
-
-  if (status === 'loading' || status === 'authenticated') {
-    return <div className="min-h-screen bg-background" />;
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
