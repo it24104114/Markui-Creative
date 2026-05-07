@@ -170,30 +170,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </div>
         </SectionReveal>
 
-        <SectionReveal className="mb-16">
-          <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(255,106,0,0.18),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 md:p-10">
-            <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-primary to-transparent" />
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary mb-4">Creative direction</p>
-                <p className="text-2xl md:text-4xl font-display leading-tight text-white max-w-4xl">
-                  {project.description}
-                </p>
-              </div>
-              <div className="space-y-3 text-sm text-text-muted">
-                <div className="rounded-2xl border border-white/10 bg-background/40 px-4 py-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-text-subtle mb-2">Format</p>
-                  <p className="text-white font-medium">{formatProjectContentType(project.contentType)}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-background/40 px-4 py-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-text-subtle mb-2">Canvas</p>
-                  <p className="text-white font-medium">{formatProjectOrientation(project.orientation)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </SectionReveal>
-
         {/* Content Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
           <div className="lg:col-span-2 space-y-12">
