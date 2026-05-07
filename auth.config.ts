@@ -3,7 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 // Edge-safe config — no Node.js-only imports.
 // Used directly by middleware.
 export const authConfig: NextAuthConfig = {
-  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/admin/login',
     error: '/admin/login',
