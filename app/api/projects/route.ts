@@ -6,6 +6,8 @@ import { projectSchema } from '@/lib/validations';
 import { generateSlug } from '@/lib/utils';
 import type { ProjectFilters } from '@/types';
 import {
+  DEFAULT_PROJECT_COVER_IMAGE,
+  DEFAULT_PROJECT_DESCRIPTION,
   extractDriveFolderId,
   isSupportedSocialUrl,
   normalizeSocialEmbeds,
@@ -122,6 +124,8 @@ export async function POST(req: NextRequest) {
     const project = await prisma.project.create({
       data: {
         ...data,
+        description: data.description?.trim() || DEFAULT_PROJECT_DESCRIPTION,
+        coverImage: data.coverImage?.trim() || DEFAULT_PROJECT_COVER_IMAGE,
         slug,
         socialEmbeds: normalizedSocialEmbeds as unknown as Prisma.InputJsonValue,
         driveFolderUrl: data.driveFolderUrl || null,

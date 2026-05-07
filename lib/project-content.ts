@@ -2,6 +2,8 @@ export const PROJECT_ORIENTATIONS = ['LANDSCAPE', 'PORTRAIT', 'SQUARE'] as const
 export const PROJECT_CONTENT_TYPES = ['REEL', 'POST', 'CAROUSEL', 'CAMPAIGN'] as const;
 export const DRIVE_SYNC_STATUSES = ['IDLE', 'SYNCING', 'READY', 'ERROR'] as const;
 export const SOCIAL_PLATFORMS = ['youtube', 'instagram', 'tiktok'] as const;
+export const DEFAULT_PROJECT_DESCRIPTION = 'Project details coming soon.';
+export const DEFAULT_PROJECT_COVER_IMAGE = 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=1600&q=80&auto=format&fit=crop';
 
 export type ProjectOrientationValue = (typeof PROJECT_ORIENTATIONS)[number];
 export type ProjectContentTypeValue = (typeof PROJECT_CONTENT_TYPES)[number];

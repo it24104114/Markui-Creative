@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { projectSchema } from '@/lib/validations';
 import {
+  DEFAULT_PROJECT_COVER_IMAGE,
+  DEFAULT_PROJECT_DESCRIPTION,
   extractDriveFolderId,
   isSupportedSocialUrl,
   normalizeSocialEmbeds,
@@ -115,6 +117,14 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         updateData.driveLastSyncedAt = null;
         updateData.driveSyncStatus = driveFolderId ? 'IDLE' : 'IDLE';
       }
+    }
+
+    if ('description' in parsed.data) {
+      updateData.description = parsed.data.description?.trim() || DEFAULT_PROJECT_DESCRIPTION;
+    }
+
+    if ('coverImage' in parsed.data) {
+      updateData.coverImage = parsed.data.coverImage?.trim() || DEFAULT_PROJECT_COVER_IMAGE;
     }
 
     const project = await prisma.project.update({

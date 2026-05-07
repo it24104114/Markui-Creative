@@ -276,7 +276,7 @@ export function ProjectForm({ project, categories }: ProjectFormProps) {
                   {errors.slug && <p className="text-xs text-red-400 mt-1">{errors.slug.message}</p>}
                 </div>
                 <div>
-                  <label className="form-label">Description *</label>
+                  <label className="form-label">Description</label>
                   <textarea {...register('description')} rows={4} className="input-field resize-none" placeholder="Project overview..." />
                   <p className="text-xs text-text-subtle mt-1">This copy powers the animated description block on the public project page.</p>
                   {errors.description && <p className="text-xs text-red-400 mt-1">{errors.description.message}</p>}
@@ -425,7 +425,7 @@ export function ProjectForm({ project, categories }: ProjectFormProps) {
                   <input {...register('year', { valueAsNumber: true })} type="number" min="2000" max="2099" className="input-field" />
                 </div>
                 <div>
-                  <label className="form-label">Cover Image URL *</label>
+                  <label className="form-label">Cover Image URL</label>
                   <input {...register('coverImage')} className="input-field font-mono text-xs" placeholder="https://..." />
                   {errors.coverImage && <p className="text-xs text-red-400 mt-1">{errors.coverImage.message}</p>}
                 </div>
