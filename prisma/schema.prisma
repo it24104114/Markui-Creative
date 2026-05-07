@@ -99,6 +99,15 @@ model Project {
   featured    Boolean       @default(false)
   sortOrder   Int           @default(0)
   status      ProjectStatus @default(DRAFT)
+  orientation ProjectOrientation @default(LANDSCAPE)
+  contentType ProjectContentType @default(POST)
+  socialEmbeds Json?
+  driveFolderUrl String?
+  driveFolderId String?
+  driveAssets Json?
+  driveSyncStatus DriveSyncStatus @default(IDLE)
+  driveSyncError String?     @db.Text
+  driveLastSyncedAt DateTime?
   views       Int           @default(0)
   year        Int?
   tags        String[]
@@ -182,6 +191,26 @@ enum ProjectStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum ProjectOrientation {
+  LANDSCAPE
+  PORTRAIT
+  SQUARE
+}
+
+enum ProjectContentType {
+  REEL
+  POST
+  CAROUSEL
+  CAMPAIGN
+}
+
+enum DriveSyncStatus {
+  IDLE
+  SYNCING
+  READY
+  ERROR
 }
 
 enum LeadStatus {

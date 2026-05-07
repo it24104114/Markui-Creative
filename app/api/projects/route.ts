@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { projectSchema } from '@/lib/validations';
 import { generateSlug } from '@/lib/utils';
 import type { ProjectFilters } from '@/types';
+import {
+  extractDriveFolderId,
+  isSupportedSocialUrl,
+  normalizeSocialEmbeds,
+  SOCIAL_PLATFORMS,
+} from '@/lib/project-content';
+
+function getInvalidSocialLinkError(socialEmbeds: ReturnType<typeof normalizeSocialEmbeds>) {
+  for (const platform of SOCIAL_PLATFORMS) {
+    const invalidUrl = socialEmbeds[platform].find((url) => !isSupportedSocialUrl(platform, url));
+    if (invalidUrl) {
+      return `${platform[0].toUpperCase()}${platform.slice(1)} link is not a supported embed URL`;
+    }
+  }
+
+  return null;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -72,12 +90,28 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const parsed = projectSchema.safeParse(body);
+    const normalizedSocialEmbeds = normalizeSocialEmbeds(body.socialEmbeds);
+    const driveFolderUrl = typeof body.driveFolderUrl === 'string' ? body.driveFolderUrl.trim() : '';
+    const parsed = projectSchema.safeParse({
+      ...body,
+      socialEmbeds: normalizedSocialEmbeds,
+      driveFolderUrl,
+    });
     if (!parsed.success) {
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 422 });
     }
 
     const data = parsed.data;
+    const invalidSocialError = getInvalidSocialLinkError(normalizedSocialEmbeds);
+    if (invalidSocialError) {
+      return NextResponse.json({ error: invalidSocialError }, { status: 422 });
+    }
+
+    const driveFolderId = data.driveFolderUrl ? extractDriveFolderId(data.driveFolderUrl) : null;
+    if (data.driveFolderUrl && !driveFolderId) {
+      return NextResponse.json({ error: 'Drive folder link is not recognized' }, { status: 422 });
+    }
+
     const slug = data.slug || generateSlug(data.title);
 
     const existing = await prisma.project.findUnique({ where: { slug } });
@@ -86,7 +120,16 @@ export async function POST(req: NextRequest) {
     }
 
     const project = await prisma.project.create({
-      data: { ...data, slug },
+      data: {
+        ...data,
+        slug,
+        socialEmbeds: normalizedSocialEmbeds as unknown as Prisma.InputJsonValue,
+        driveFolderUrl: data.driveFolderUrl || null,
+        driveFolderId,
+        driveAssets: Prisma.DbNull,
+        driveSyncStatus: 'IDLE',
+        driveSyncError: null,
+      },
       include: { category: true },
     });
 

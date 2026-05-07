@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { projectSchema } from '@/lib/validations';
+import {
+  extractDriveFolderId,
+  isSupportedSocialUrl,
+  normalizeSocialEmbeds,
+  SOCIAL_PLATFORMS,
+} from '@/lib/project-content';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
+}
+
+function getInvalidSocialLinkError(socialEmbeds: ReturnType<typeof normalizeSocialEmbeds>) {
+  for (const platform of SOCIAL_PLATFORMS) {
+    const invalidUrl = socialEmbeds[platform].find((url) => !isSupportedSocialUrl(platform, url));
+    if (invalidUrl) {
+      return `${platform[0].toUpperCase()}${platform.slice(1)} link is not a supported embed URL`;
+    }
+  }
+
+  return null;
 }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
@@ -52,14 +70,56 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (!existing) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
     const body = await req.json();
-    const parsed = projectSchema.partial().safeParse(body);
+    const normalizedBody = { ...body };
+
+    if ('socialEmbeds' in body) {
+      normalizedBody.socialEmbeds = normalizeSocialEmbeds(body.socialEmbeds);
+    }
+
+    if (typeof body.driveFolderUrl === 'string') {
+      normalizedBody.driveFolderUrl = body.driveFolderUrl.trim();
+    }
+
+    const parsed = projectSchema.partial().safeParse(normalizedBody);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 422 });
     }
 
+    const updateData: Record<string, unknown> = { ...parsed.data };
+
+    if ('socialEmbeds' in parsed.data) {
+      const invalidSocialError = getInvalidSocialLinkError(parsed.data.socialEmbeds!);
+      if (invalidSocialError) {
+        return NextResponse.json({ error: invalidSocialError }, { status: 422 });
+      }
+
+      updateData.socialEmbeds = parsed.data.socialEmbeds;
+      updateData.socialEmbeds = parsed.data.socialEmbeds as Prisma.InputJsonValue;
+    }
+
+    if ('driveFolderUrl' in parsed.data) {
+      const driveFolderUrl = parsed.data.driveFolderUrl || '';
+      const driveFolderId = driveFolderUrl ? extractDriveFolderId(driveFolderUrl) : null;
+
+      if (driveFolderUrl && !driveFolderId) {
+        return NextResponse.json({ error: 'Drive folder link is not recognized' }, { status: 422 });
+      }
+
+      const driveChanged = existing.driveFolderId !== driveFolderId;
+      updateData.driveFolderUrl = driveFolderUrl || null;
+      updateData.driveFolderId = driveFolderId;
+
+      if (driveChanged) {
+        updateData.driveAssets = Prisma.DbNull;
+        updateData.driveSyncError = null;
+        updateData.driveLastSyncedAt = null;
+        updateData.driveSyncStatus = driveFolderId ? 'IDLE' : 'IDLE';
+      }
+    }
+
     const project = await prisma.project.update({
       where: { id: existing.id },
-      data: parsed.data,
+      data: updateData,
       include: { category: true },
     });
 

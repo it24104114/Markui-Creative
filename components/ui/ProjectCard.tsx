@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { cardHoverVariants, imageHoverVariants, overlayVariants } from '@/lib/animations';
+import { formatProjectContentType, getProjectAspectRatioClass } from '@/lib/project-content';
 import type { ProjectWithCategory } from '@/types';
 
 interface ProjectCardProps {
@@ -16,7 +17,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, className, priority = false, size = 'default' }: ProjectCardProps) {
-  const aspectRatio = size === 'large' ? 'aspect-[4/3]' : size === 'small' ? 'aspect-[3/2]' : 'aspect-[16/10]';
+  const aspectRatio = getProjectAspectRatioClass(project.orientation, size);
 
   return (
     <motion.div
@@ -69,6 +70,11 @@ export function ProjectCard({ project, className, priority = false, size = 'defa
                 {project.category.name}
                 {project.clientName && ` · ${project.clientName}`}
               </p>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="badge-muted text-[10px] uppercase tracking-[0.2em]">
+                  {formatProjectContentType(project.contentType)}
+                </span>
+              </div>
               <h3 className="font-semibold text-white text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
                 {project.title}
               </h3>

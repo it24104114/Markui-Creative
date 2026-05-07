@@ -1,6 +1,19 @@
 import { z } from 'zod';
+import {
+  EMPTY_SOCIAL_EMBEDS,
+  PROJECT_CONTENT_TYPES,
+  PROJECT_ORIENTATIONS,
+} from '@/lib/project-content';
 
 // ─── Project ───────────────────────────────────────────────────────────────
+
+const projectLinkArraySchema = z.array(z.string().url('Please enter a valid URL')).default([]);
+
+const socialEmbedsSchema = z.object({
+  youtube: projectLinkArraySchema,
+  instagram: projectLinkArraySchema,
+  tiktok: projectLinkArraySchema,
+});
 
 export const projectSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(100),
@@ -18,6 +31,10 @@ export const projectSchema = z.object({
   coverImage: z.string().url('Cover image must be a valid URL'),
   featured: z.boolean().default(false),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
+  orientation: z.enum(PROJECT_ORIENTATIONS).default('LANDSCAPE'),
+  contentType: z.enum(PROJECT_CONTENT_TYPES).default('POST'),
+  socialEmbeds: socialEmbedsSchema.default(EMPTY_SOCIAL_EMBEDS),
+  driveFolderUrl: z.string().url('Drive folder must be a valid URL').optional().or(z.literal('')),
   year: z.number().int().min(2000).max(2099).optional(),
   tags: z.array(z.string()).default([]),
 });
