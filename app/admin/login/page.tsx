@@ -20,16 +20,26 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setLoading(true);
     setError('');
-    const result = await signIn('credentials', {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-    });
-    if (result?.error) {
-      setError('Invalid email or password.');
+
+    try {
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        callbackUrl: '/admin/dashboard',
+      });
+
+      if (!result || result.error || !result.ok) {
+        setError('Invalid email or password.');
+        return;
+      }
+
+      // Use NextAuth's resolved callback URL so host and basePath are respected.
+      window.location.href = result.url ?? '/admin/dashboard';
+    } catch {
+      setError('Sign in failed. Please try again.');
+    } finally {
       setLoading(false);
-    } else {
-      window.location.href = '/admin/dashboard';
     }
   };
 
