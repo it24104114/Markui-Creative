@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, ArrowUpRight, Eye } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -20,8 +21,12 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const session = await auth();
   const project = await prisma.project.findUnique({
-    where: { slug, status: 'PUBLISHED' },
+    where: {
+      slug,
+      ...(!session && { status: 'PUBLISHED' }),
+    },
     select: { title: true, description: true, coverImage: true },
   });
   if (!project) return { title: 'Project Not Found' };
@@ -47,8 +52,13 @@ export async function generateStaticParams() {
 
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const session = await auth();
+  const isAdminPreview = !!session;
   const project = await prisma.project.findUnique({
-    where: { slug, status: 'PUBLISHED' },
+    where: {
+      slug,
+      ...(!isAdminPreview && { status: 'PUBLISHED' }),
+    },
     include: {
       category: true,
       media: { orderBy: { sortOrder: 'asc' } },
@@ -58,10 +68,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   if (!project) notFound();
 
   // Increment views
-  await prisma.project.update({
-    where: { id: project.id },
-    data: { views: { increment: 1 } },
-  });
+  if (!isAdminPreview) {
+    await prisma.project.update({
+      where: { id: project.id },
+      data: { views: { increment: 1 } },
+    });
+  }
 
   const socialEmbeds = normalizeSocialEmbeds(project.socialEmbeds);
   const resolvedEmbeds = [
@@ -149,6 +161,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               <span className="badge-primary">{project.category.name}</span>
               <span className="badge-muted text-xs uppercase tracking-[0.25em]">{formatProjectContentType(project.contentType)}</span>
               <span className="badge-muted text-xs uppercase tracking-[0.25em]">{formatProjectOrientation(project.orientation)}</span>
+              {isAdminPreview && project.status !== 'PUBLISHED' && (
+                <span className="badge-muted text-xs uppercase tracking-[0.25em]">{project.status}</span>
+              )}
               {project.year && <span className="text-sm text-text-subtle">{project.year}</span>}
               <span className="flex items-center gap-1 text-xs text-text-subtle">
                 <Eye size={12} />
