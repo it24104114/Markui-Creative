@@ -196,6 +196,11 @@ export function ProjectForm({ project, categories }: ProjectFormProps) {
       label: 'TikTok',
       placeholder: 'https://www.tiktok.com/@creator/video/...',
     },
+    {
+      platform: 'facebook',
+      label: 'Facebook',
+      placeholder: 'https://www.facebook.com/.../posts/...',
+    },
   ];
 
   return (
@@ -299,7 +304,7 @@ export function ProjectForm({ project, categories }: ProjectFormProps) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-white">Social Media Embeds</h3>
-                    <p className="text-xs text-text-subtle mt-1">Add multiple YouTube, Instagram, and TikTok links to display directly on the website.</p>
+                    <p className="text-xs text-text-subtle mt-1">Add multiple YouTube, Instagram, TikTok, and Facebook links to display directly on the website.</p>
                   </div>
                   <span className="badge-muted text-xs">Inline embeds</span>
                 </div>
@@ -433,15 +438,15 @@ export function ProjectForm({ project, categories }: ProjectFormProps) {
 
               <div className="card space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Google Drive Gallery</h3>
-                  <p className="text-xs text-text-subtle mt-1">Paste a shared folder link, save the project, then sync images into the public mosaic gallery.</p>
+                  <h3 className="text-sm font-semibold text-white">Gallery Sync</h3>
+                  <p className="text-xs text-text-subtle mt-1">Paste a Google Drive folder link or a public Google Photos shared link, then sync images into the public mosaic gallery.</p>
                 </div>
                 <div>
-                  <label className="form-label">Drive Folder Link</label>
+                  <label className="form-label">Drive / Google Photos Link</label>
                   <input
                     {...register('driveFolderUrl')}
                     className="input-field font-mono text-xs"
-                    placeholder="https://drive.google.com/drive/folders/..."
+                    placeholder="https://drive.google.com/drive/folders/... or https://photos.app.goo.gl/..."
                   />
                   {errors.driveFolderUrl && <p className="text-xs text-red-400 mt-1">{errors.driveFolderUrl.message}</p>}
                 </div>
@@ -463,10 +468,10 @@ export function ProjectForm({ project, categories }: ProjectFormProps) {
                     className="btn-secondary w-full justify-center"
                   >
                     {isSyncingDrive ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                    {isSyncingDrive ? 'Syncing Drive...' : 'Sync Drive Images'}
+                    {isSyncingDrive ? 'Syncing Gallery...' : 'Sync Gallery Images'}
                   </button>
                 ) : (
-                  <p className="text-xs text-text-subtle">Save the project first to sync Google Drive assets.</p>
+                  <p className="text-xs text-text-subtle">Save the project first to sync Google Drive or Google Photos assets.</p>
                 )}
                 {driveMessage && <p className="text-xs text-emerald-400">{driveMessage}</p>}
               </div>

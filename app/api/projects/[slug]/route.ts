@@ -7,6 +7,7 @@ import {
   DEFAULT_PROJECT_COVER_IMAGE,
   DEFAULT_PROJECT_DESCRIPTION,
   extractDriveFolderId,
+  getGallerySourceType,
   isSupportedSocialUrl,
   normalizeSocialEmbeds,
   SOCIAL_PLATFORMS,
@@ -102,12 +103,13 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if ('driveFolderUrl' in parsed.data) {
       const driveFolderUrl = parsed.data.driveFolderUrl || '';
       const driveFolderId = driveFolderUrl ? extractDriveFolderId(driveFolderUrl) : null;
+      const gallerySourceType = driveFolderUrl ? getGallerySourceType(driveFolderUrl) : null;
 
-      if (driveFolderUrl && !driveFolderId) {
-        return NextResponse.json({ error: 'Drive folder link is not recognized' }, { status: 422 });
+      if (driveFolderUrl && !gallerySourceType) {
+        return NextResponse.json({ error: 'Gallery link is not recognized. Use a Google Drive folder or public Google Photos shared link.' }, { status: 422 });
       }
 
-      const driveChanged = existing.driveFolderId !== driveFolderId;
+      const driveChanged = existing.driveFolderUrl !== (driveFolderUrl || null);
       updateData.driveFolderUrl = driveFolderUrl || null;
       updateData.driveFolderId = driveFolderId;
 

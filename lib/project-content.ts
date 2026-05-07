@@ -1,7 +1,7 @@
 export const PROJECT_ORIENTATIONS = ['LANDSCAPE', 'PORTRAIT', 'SQUARE'] as const;
 export const PROJECT_CONTENT_TYPES = ['REEL', 'POST', 'CAROUSEL', 'CAMPAIGN'] as const;
 export const DRIVE_SYNC_STATUSES = ['IDLE', 'SYNCING', 'READY', 'ERROR'] as const;
-export const SOCIAL_PLATFORMS = ['youtube', 'instagram', 'tiktok'] as const;
+export const SOCIAL_PLATFORMS = ['youtube', 'instagram', 'tiktok', 'facebook'] as const;
 export const DEFAULT_PROJECT_DESCRIPTION = 'Project details coming soon.';
 export const DEFAULT_PROJECT_COVER_IMAGE = 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=1600&q=80&auto=format&fit=crop';
 
@@ -14,6 +14,7 @@ export interface ProjectSocialEmbeds {
   youtube: string[];
   instagram: string[];
   tiktok: string[];
+  facebook: string[];
 }
 
 export interface ProjectDriveAsset {
@@ -37,6 +38,7 @@ const emptySocialEmbedsValue: ProjectSocialEmbeds = {
   youtube: [],
   instagram: [],
   tiktok: [],
+  facebook: [],
 };
 
 export function emptySocialEmbeds(): ProjectSocialEmbeds {
@@ -44,6 +46,7 @@ export function emptySocialEmbeds(): ProjectSocialEmbeds {
     youtube: [],
     instagram: [],
     tiktok: [],
+    facebook: [],
   };
 }
 
@@ -67,6 +70,7 @@ export function normalizeSocialEmbeds(input: unknown): ProjectSocialEmbeds {
     youtube: normalizeUrlArray(source.youtube),
     instagram: normalizeUrlArray(source.instagram),
     tiktok: normalizeUrlArray(source.tiktok),
+    facebook: normalizeUrlArray(source.facebook),
   };
 }
 
@@ -157,6 +161,18 @@ function resolveTikTokEmbed(url: string): string | null {
   return `https://www.tiktok.com/embed/v2/${videoMatch[1]}`;
 }
 
+function resolveFacebookEmbed(url: string): string | null {
+  const parsed = safeUrl(url);
+  if (!parsed) return null;
+
+  const host = parsed.hostname.replace(/^www\./, '');
+  if (!['facebook.com', 'm.facebook.com', 'fb.watch'].includes(host)) {
+    return null;
+  }
+
+  return `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(parsed.toString())}&show_text=true&width=500`;
+}
+
 export function resolveSocialEmbed(platform: SocialPlatform, url: string): ResolvedSocialEmbed | null {
   const trimmedUrl = url.trim();
   if (!trimmedUrl) return null;
@@ -166,7 +182,9 @@ export function resolveSocialEmbed(platform: SocialPlatform, url: string): Resol
       ? resolveYouTubeEmbed(trimmedUrl)
       : platform === 'instagram'
         ? resolveInstagramEmbed(trimmedUrl)
-        : resolveTikTokEmbed(trimmedUrl);
+        : platform === 'tiktok'
+          ? resolveTikTokEmbed(trimmedUrl)
+          : resolveFacebookEmbed(trimmedUrl);
 
   if (!embedUrl) return null;
 
@@ -193,6 +211,26 @@ export function extractDriveFolderId(url: string): string | null {
   const queryId = parsed.searchParams.get('id');
   if (queryId) {
     return queryId;
+  }
+
+  return null;
+}
+
+export function isGooglePhotosUrl(url: string): boolean {
+  const parsed = safeUrl(url.trim());
+  if (!parsed) return false;
+
+  const host = parsed.hostname.replace(/^www\./, '');
+  return host === 'photos.google.com' || host === 'photos.app.goo.gl';
+}
+
+export function getGallerySourceType(url: string): 'drive' | 'google-photos' | null {
+  if (extractDriveFolderId(url)) {
+    return 'drive';
+  }
+
+  if (isGooglePhotosUrl(url)) {
+    return 'google-photos';
   }
 
   return null;

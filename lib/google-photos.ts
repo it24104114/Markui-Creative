@@ -1,0 +1,48 @@
+import type { ProjectDriveAsset } from '@/lib/project-content';
+
+function decodeGooglePhotosPayload(input: string) {
+  return input
+    .replace(/\\u003d/g, '=')
+    .replace(/\\u0026/g, '&')
+    .replace(/\\\//g, '/');
+}
+
+function normalizeGooglePhotoAssetUrl(url: string) {
+  const trimmed = url.split(/["'<\s]/)[0]?.trim();
+  if (!trimmed) return null;
+
+  return trimmed.includes('=') ? trimmed : `${trimmed}=w1600-h1600-no`;
+}
+
+export async function listGooglePhotosSharedImages(sharedUrl: string): Promise<ProjectDriveAsset[]> {
+  const response = await fetch(sharedUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    },
+    redirect: 'follow',
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Google Photos link could not be loaded');
+  }
+
+  const html = decodeGooglePhotosPayload(await response.text());
+  const matches = html.match(/https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9_\-./=:%?&+,;~]+/g) ?? [];
+  const uniqueUrls = Array.from(new Set(matches))
+    .map((url) => normalizeGooglePhotoAssetUrl(url))
+    .filter((url): url is string => !!url)
+    .filter((url) => !url.includes('/a-/') && !url.includes('googleusercontent.com/proxy/'));
+
+  if (uniqueUrls.length === 0) {
+    throw new Error('No public images were found in this Google Photos link');
+  }
+
+  return uniqueUrls.slice(0, 120).map((url, index) => ({
+    id: `google-photo-${index + 1}`,
+    url,
+    thumbnailUrl: url,
+    name: `Google Photo ${index + 1}`,
+  }));
+}

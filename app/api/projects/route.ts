@@ -9,6 +9,7 @@ import {
   DEFAULT_PROJECT_COVER_IMAGE,
   DEFAULT_PROJECT_DESCRIPTION,
   extractDriveFolderId,
+  getGallerySourceType,
   isSupportedSocialUrl,
   normalizeSocialEmbeds,
   SOCIAL_PLATFORMS,
@@ -110,8 +111,9 @@ export async function POST(req: NextRequest) {
     }
 
     const driveFolderId = data.driveFolderUrl ? extractDriveFolderId(data.driveFolderUrl) : null;
-    if (data.driveFolderUrl && !driveFolderId) {
-      return NextResponse.json({ error: 'Drive folder link is not recognized' }, { status: 422 });
+    const gallerySourceType = data.driveFolderUrl ? getGallerySourceType(data.driveFolderUrl) : null;
+    if (data.driveFolderUrl && !gallerySourceType) {
+      return NextResponse.json({ error: 'Gallery link is not recognized. Use a Google Drive folder or public Google Photos shared link.' }, { status: 422 });
     }
 
     const slug = data.slug || generateSlug(data.title);

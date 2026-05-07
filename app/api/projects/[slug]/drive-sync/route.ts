@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { listDriveFolderImages } from '@/lib/google-drive';
+import { listGooglePhotosSharedImages } from '@/lib/google-photos';
+import { extractDriveFolderId, isGooglePhotosUrl } from '@/lib/project-content';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -20,8 +22,8 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    if (!project.driveFolderId) {
-      return NextResponse.json({ error: 'Add a Google Drive folder link before syncing' }, { status: 422 });
+    if (!project.driveFolderUrl) {
+      return NextResponse.json({ error: 'Add a Google Drive folder or public Google Photos link before syncing' }, { status: 422 });
     }
 
     await prisma.project.update({
@@ -33,12 +35,21 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
     });
 
     try {
-      const driveAssets = await listDriveFolderImages(project.driveFolderId);
+      const galleryUrl = project.driveFolderUrl;
+      const galleryAssets = project.driveFolderId || extractDriveFolderId(galleryUrl)
+        ? await listDriveFolderImages(project.driveFolderId ?? extractDriveFolderId(galleryUrl)!)
+        : isGooglePhotosUrl(galleryUrl)
+          ? await listGooglePhotosSharedImages(galleryUrl)
+          : null;
+
+      if (!galleryAssets) {
+        throw new Error('Gallery link is not recognized. Use a Google Drive folder or public Google Photos shared link.');
+      }
 
       const updatedProject = await prisma.project.update({
         where: { id: project.id },
         data: {
-          driveAssets: driveAssets as unknown as Prisma.InputJsonValue,
+          driveAssets: galleryAssets as unknown as Prisma.InputJsonValue,
           driveSyncStatus: 'READY',
           driveSyncError: null,
           driveLastSyncedAt: new Date(),
@@ -47,7 +58,7 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
 
       return NextResponse.json({
         data: {
-          count: Array.isArray(updatedProject.driveAssets) ? updatedProject.driveAssets.length : driveAssets.length,
+          count: Array.isArray(updatedProject.driveAssets) ? updatedProject.driveAssets.length : galleryAssets.length,
         },
       });
     } catch (error) {

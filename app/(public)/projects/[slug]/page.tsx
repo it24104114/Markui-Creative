@@ -77,6 +77,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       const embed = resolveSocialEmbed('tiktok', url);
       return embed ? [embed] : [];
     }),
+    ...socialEmbeds.facebook.flatMap((url) => {
+      const embed = resolveSocialEmbed('facebook', url);
+      return embed ? [embed] : [];
+    }),
   ];
   const driveAssets = normalizeDriveAssets(project.driveAssets);
   const galleryItems = [
@@ -207,7 +211,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             </h2>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {resolvedEmbeds.map((embed) => {
-                const isVertical = embed.platform !== 'youtube';
+                const isVertical = embed.platform === 'instagram' || embed.platform === 'tiktok';
+                const embedAspectClass = embed.platform === 'facebook'
+                  ? 'aspect-[4/5]'
+                  : isVertical
+                    ? 'aspect-[9/16]'
+                    : 'aspect-video';
 
                 return (
                   <div key={`${embed.platform}-${embed.url}`} className="group rounded-[1.5rem] border border-border bg-surface/70 p-4 transition-transform duration-300 hover:-translate-y-1">
@@ -220,7 +229,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                         Open source
                       </Link>
                     </div>
-                    <div className={`overflow-hidden rounded-[1.25rem] bg-black ${isVertical ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                    <div className={`overflow-hidden rounded-[1.25rem] bg-black ${embedAspectClass}`}>
                       <iframe
                         src={embed.embedUrl}
                         title={`${project.title} ${embed.platform} embed`}
@@ -261,7 +270,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent opacity-70" />
                   <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-3">
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.28em] text-primary mb-1">{item.kind === 'drive' ? 'Drive sync' : 'Library upload'}</p>
+                      <p className="text-[10px] uppercase tracking-[0.28em] text-primary mb-1">{item.kind === 'drive' ? 'Synced gallery' : 'Library upload'}</p>
                       <p className="text-sm text-white/90 line-clamp-2">{item.alt}</p>
                     </div>
                   </div>

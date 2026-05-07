@@ -13,6 +13,7 @@ const socialEmbedsSchema = z.object({
   youtube: projectLinkArraySchema,
   instagram: projectLinkArraySchema,
   tiktok: projectLinkArraySchema,
+  facebook: projectLinkArraySchema,
 });
 
 export const projectSchema = z.object({
