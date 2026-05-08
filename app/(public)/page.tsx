@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { FeaturedProjects } from '@/components/sections/FeaturedProjects';
 import { StatsSection } from '@/components/sections/StatsSection';
+import { ProcessSection } from '@/components/sections/ProcessSection';
 import { ServicesSection } from '@/components/sections/ServicesSection';
 import { CTASection } from '@/components/sections/CTASection';
 import type { Metadata } from 'next';
@@ -42,6 +43,7 @@ export default async function HomePage() {
       <HeroSection />
       <FeaturedProjects projects={featuredProjects} />
       <StatsSection />
+      <ProcessSection />
       <ServicesSection />
       <CTASection />
     </>
