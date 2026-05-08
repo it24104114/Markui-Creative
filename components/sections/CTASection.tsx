@@ -10,9 +10,13 @@ export function CTASection() {
     <section className="section-padding border-t border-border">
       <div className="section-container">
         <SectionReveal>
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-surface to-surface border border-primary/20 p-12 md:p-16 text-center">
-            {/* Background effect */}
-            <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent" />
+          <div className="relative overflow-hidden rounded-3xl bg-[#0D0D0D] p-12 md:p-16 text-center border border-white/5">
+            {/* Animated background orb */}
+            <motion.div
+              animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15] }}
+              transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary rounded-full blur-[120px] pointer-events-none"
+            />
 
             <div className="relative z-10">
               <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">
@@ -23,7 +27,7 @@ export function CTASection() {
                 <br />
                 <span className="text-gradient">Remarkable Together</span>
               </h2>
-              <p className="text-text-muted text-lg mb-10 max-w-lg mx-auto">
+              <p className="text-white/50 text-lg mb-10 max-w-lg mx-auto">
                 Tell us about your project and we&apos;ll get back to you within 24 hours.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -31,7 +35,7 @@ export function CTASection() {
                   Start a Project
                   <ArrowUpRight size={16} />
                 </Link>
-                <Link href="/projects" className="btn-secondary px-8 py-3.5 text-base">
+                <Link href="/projects" className="btn-ghost-dark px-8 py-3.5 text-base">
                   See Our Work
                 </Link>
               </div>

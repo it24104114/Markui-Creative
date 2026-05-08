@@ -1,5 +1,8 @@
 import { google } from 'googleapis';
-import type { ProjectDriveAsset } from '@/lib/project-content';
+import {
+  isProjectDriveAssetEligible,
+  type ProjectDriveAsset,
+} from '@/lib/project-content';
 
 function getDriveCredentials() {
   const clientEmail = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
@@ -51,7 +54,7 @@ export async function listDriveFolderImages(folderId: string): Promise<ProjectDr
     for (const file of response.data.files ?? []) {
       if (!file.id) continue;
 
-      files.push({
+      const asset: ProjectDriveAsset = {
         id: file.id,
         url: file.webContentLink ?? toPublicImageUrl(file.id),
         thumbnailUrl: file.thumbnailLink ?? toThumbnailUrl(file.id),
@@ -60,7 +63,13 @@ export async function listDriveFolderImages(folderId: string): Promise<ProjectDr
         name: file.name ?? undefined,
         mimeType: file.mimeType ?? undefined,
         webViewLink: file.webViewLink ?? undefined,
-      });
+      };
+
+      if (!isProjectDriveAssetEligible(asset)) {
+        continue;
+      }
+
+      files.push(asset);
     }
 
     pageToken = response.data.nextPageToken ?? undefined;

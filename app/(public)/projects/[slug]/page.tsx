@@ -6,10 +6,14 @@ import { prisma } from '@/lib/prisma';
 import { ArrowLeft, ArrowUpRight, Eye } from 'lucide-react';
 import type { Metadata } from 'next';
 import { SectionReveal } from '@/components/ui/SectionReveal';
+import { ProjectGalleryGrid } from '@/components/ui/ProjectGalleryGrid';
 import {
   formatProjectContentType,
   formatProjectOrientation,
   getProjectAspectRatioClass,
+  hasExcludedGalleryName,
+  isProjectDriveAssetEligible,
+  isValidGalleryImageUrl,
   normalizeDriveAssets,
   normalizeSocialEmbeds,
   resolveSocialEmbed,
@@ -95,6 +99,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     }),
   ];
   const driveAssets = normalizeDriveAssets(project.driveAssets);
+  const filteredDriveAssets = driveAssets.filter((asset) => isProjectDriveAssetEligible(asset));
   const galleryItems = [
     ...project.media.map((item) => ({
       id: item.id,
@@ -104,7 +109,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       width: item.width ?? 1200,
       height: item.height ?? 900,
     })),
-    ...driveAssets.map((asset) => ({
+    ...filteredDriveAssets.map((asset) => ({
       id: asset.id,
       kind: 'drive' as const,
       url: asset.url,
@@ -112,7 +117,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       width: asset.width ?? 1200,
       height: asset.height ?? 900,
     })),
-  ];
+  ].filter((item) => isValidGalleryImageUrl(item.url) && !hasExcludedGalleryName(item.alt));
 
   const sections = [
     { title: 'Overview', content: project.description },
@@ -120,14 +125,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     { title: 'Process', content: project.process },
     { title: 'Results', content: project.results },
   ].filter((s) => s.content);
-
-  const mosaicPattern = [
-    'col-span-12 md:col-span-7 row-span-3',
-    'col-span-6 md:col-span-5 row-span-2',
-    'col-span-6 md:col-span-5 row-span-2',
-    'col-span-12 md:col-span-4 row-span-2',
-    'col-span-12 md:col-span-8 row-span-3',
-  ];
 
   return (
     <article className="pt-20">
@@ -269,29 +266,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               <span className="w-6 h-px bg-primary" />
               Project Gallery
             </h2>
-            <div className="grid grid-cols-12 auto-rows-[110px] md:auto-rows-[150px] gap-4">
-              {galleryItems.map((item, index) => (
-                <div
-                  key={`${item.kind}-${item.id}`}
-                  className={`group relative overflow-hidden rounded-[1.5rem] border border-white/5 bg-surface ${mosaicPattern[index % mosaicPattern.length]}`}
-                >
-                  <Image
-                    src={item.url}
-                    alt={item.alt}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent opacity-70" />
-                  <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.28em] text-primary mb-1">{item.kind === 'drive' ? 'Synced gallery' : 'Library upload'}</p>
-                      <p className="text-sm text-white/90 line-clamp-2">{item.alt}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ProjectGalleryGrid items={galleryItems} />
           </SectionReveal>
         )}
 

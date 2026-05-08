@@ -56,7 +56,7 @@ export default function AboutPage() {
         <div className="section-container">
           <div className="max-w-3xl">
             <span className="badge-primary mb-4 inline-block">About the Studio</span>
-            <h1 className="text-display-lg font-display font-black text-white leading-none mb-6">
+            <h1 className="text-display-lg font-display font-black text-foreground leading-none mb-6">
               Design is how we{' '}
               <span className="text-gradient">Solve Problems</span>
             </h1>
@@ -72,12 +72,12 @@ export default function AboutPage() {
         <div className="section-container">
           <div className="mb-12">
             <span className="text-primary text-sm font-semibold uppercase tracking-widest">Our Values</span>
-            <h2 className="text-display-sm font-display font-black text-white mt-3">How We Work</h2>
+            <h2 className="text-display-sm font-display font-black text-foreground mt-3">How We Work</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {values.map((value) => (
               <div key={value.title} className="card">
-                <h3 className="font-display font-bold text-white text-lg mb-2">{value.title}</h3>
+                <h3 className="font-display font-bold text-foreground text-lg mb-2">{value.title}</h3>
                 <p className="text-text-muted text-sm leading-relaxed">{value.description}</p>
               </div>
             ))}
@@ -90,7 +90,7 @@ export default function AboutPage() {
         <div className="section-container">
           <div className="mb-12">
             <span className="text-primary text-sm font-semibold uppercase tracking-widest">The Team</span>
-            <h2 className="text-display-sm font-display font-black text-white mt-3">Who We Are</h2>
+            <h2 className="text-display-sm font-display font-black text-foreground mt-3">Who We Are</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {team.map((member) => (
@@ -98,7 +98,7 @@ export default function AboutPage() {
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <span className="text-primary font-display font-bold text-xl">{member.initials}</span>
                 </div>
-                <h3 className="font-display font-bold text-white">{member.name}</h3>
+                <h3 className="font-display font-bold text-foreground">{member.name}</h3>
                 <p className="text-primary text-sm mt-1 mb-3">{member.role}</p>
                 <p className="text-text-muted text-sm leading-relaxed">{member.bio}</p>
               </div>
@@ -112,7 +112,7 @@ export default function AboutPage() {
       {/* Quick CTA */}
       <section className="section-padding">
         <div className="section-container text-center">
-          <h2 className="text-display-sm font-display font-black text-white mb-4">
+          <h2 className="text-display-sm font-display font-black text-foreground mb-4">
             Ready to start a project?
           </h2>
           <p className="text-text-muted mb-8 max-w-md mx-auto">

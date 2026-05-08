@@ -72,7 +72,7 @@ export function ProjectsClient({ initialProjects, categories, total }: ProjectsC
       <SectionReveal className="mb-12">
         <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">Our Work</p>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <h1 className="text-display-lg font-display font-bold text-white">
+          <h1 className="text-display-lg font-display font-bold text-foreground">
             All Projects
           </h1>
           <p className="text-text-muted">
@@ -97,7 +97,7 @@ export function ProjectsClient({ initialProjects, categories, total }: ProjectsC
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-subtle hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-subtle hover:text-foreground"
               >
                 <X size={14} />
               </button>
@@ -121,8 +121,8 @@ export function ProjectsClient({ initialProjects, categories, total }: ProjectsC
             className={cn(
               'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200',
               !selectedCategory
-                ? 'bg-primary text-white'
-                : 'bg-surface border border-border text-text-muted hover:text-white hover:border-primary/50',
+                ? 'bg-primary text-white shadow-orange-glow'
+                : 'bg-surface border border-border text-text-muted hover:text-foreground hover:border-primary/40',
             )}
           >
             All
@@ -134,8 +134,8 @@ export function ProjectsClient({ initialProjects, categories, total }: ProjectsC
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200',
                 cat.slug === selectedCategory
-                  ? 'bg-primary text-white'
-                  : 'bg-surface border border-border text-text-muted hover:text-white hover:border-primary/50',
+                  ? 'bg-primary text-white shadow-orange-glow'
+                  : 'bg-surface border border-border text-text-muted hover:text-foreground hover:border-primary/40',
               )}
             >
               {cat.name}
@@ -147,7 +147,7 @@ export function ProjectsClient({ initialProjects, categories, total }: ProjectsC
             <button
               onClick={clearFilters}
               className="px-3 py-1.5 rounded-full text-xs font-medium text-text-muted
-                         hover:text-white flex items-center gap-1.5 ml-2"
+                         hover:text-foreground flex items-center gap-1.5 ml-2"
             >
               <X size={11} />
               Clear filters
@@ -160,7 +160,7 @@ export function ProjectsClient({ initialProjects, categories, total }: ProjectsC
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-[16/10] rounded-xl bg-surface animate-pulse" />
+            <div key={i} className="aspect-[16/10] rounded-2xl bg-surface animate-pulse border border-border" />
           ))}
         </div>
       ) : projects.length === 0 ? (

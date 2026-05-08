@@ -61,7 +61,7 @@ export default function ServicesPage() {
         <div className="section-container">
           <div className="max-w-3xl">
             <span className="badge-primary mb-4 inline-block">What We Do</span>
-            <h1 className="text-display-lg font-display font-black text-white leading-none mb-6">
+            <h1 className="text-display-lg font-display font-black text-foreground leading-none mb-6">
               Services Built for{' '}
               <span className="text-gradient">Modern Brands</span>
             </h1>
@@ -78,7 +78,7 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => (
               <div key={service.slug} className="card hover:border-primary/30 transition-all duration-300 group">
-                <h3 className="font-display font-bold text-white text-lg mb-3 group-hover:text-primary transition-colors">
+                <h3 className="font-display font-bold text-foreground text-lg mb-3 group-hover:text-primary transition-colors">
                   {service.title}
                 </h3>
                 <p className="text-text-muted text-sm leading-relaxed mb-5">{service.description}</p>

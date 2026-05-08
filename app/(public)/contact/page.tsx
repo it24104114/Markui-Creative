@@ -21,9 +21,9 @@ const SERVICES = [
 ];
 
 const contactInfo = [
-  { icon: Mail, label: 'Email', value: 'hello@markui.lk', href: 'mailto:hello@markui.lk' },
-  { icon: Phone, label: 'Phone', value: '+94 77 123 4567', href: 'tel:+94771234567' },
-  { icon: MapPin, label: 'Location', value: 'Colombo, Sri Lanka', href: null },
+  { icon: Mail, label: 'Email', value: 'info@markui.lk', href: 'mailto:info@markui.lk' },
+  { icon: Phone, label: 'Phone', value: '+94 760 887 702', href: 'tel:+94760887702' },
+  { icon: MapPin, label: 'Address', value: '548, 1 Avissawella Rd, Wellampitiya 00800', href: 'https://maps.app.goo.gl/MVY8JbaCu7T3wGXW7' },
 ];
 
 export default function ContactPage() {
@@ -63,7 +63,7 @@ export default function ContactPage() {
         <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">
           Get In Touch
         </p>
-        <h1 className="text-display-lg font-display font-bold text-white mb-4">
+        <h1 className="text-display-lg font-display font-bold text-foreground mb-4">
           Let&apos;s Build Something
           <br />
           <span className="text-gradient">Remarkable</span>
@@ -90,11 +90,11 @@ export default function ContactPage() {
               <div>
                 <p className="text-xs text-text-subtle uppercase tracking-widest mb-0.5">{label}</p>
                 {href ? (
-                  <a href={href} className="text-white hover:text-primary transition-colors font-medium">
+                  <a href={href} className="text-foreground hover:text-primary transition-colors font-medium" target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}>
                     {value}
                   </a>
                 ) : (
-                  <p className="text-white font-medium">{value}</p>
+                  <p className="text-foreground font-medium">{value}</p>
                 )}
               </div>
             </RevealItem>
@@ -112,7 +112,7 @@ export default function ContactPage() {
               <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
                 <CheckCircle size={28} className="text-emerald-400" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Message Received!</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Message Received!</h3>
               <p className="text-text-muted max-w-sm">
                 Thanks for reaching out. We&apos;ll review your message and get back to you within 24 hours.
               </p>

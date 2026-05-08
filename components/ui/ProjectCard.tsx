@@ -2,10 +2,10 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { cardHoverVariants, imageHoverVariants, overlayVariants } from '@/lib/animations';
+import { overlayVariants } from '@/lib/animations';
 import { formatProjectContentType, getProjectAspectRatioClass } from '@/lib/project-content';
 import type { ProjectWithCategory } from '@/types';
 
@@ -19,17 +19,46 @@ interface ProjectCardProps {
 export function ProjectCard({ project, className, priority = false, size = 'default' }: ProjectCardProps) {
   const aspectRatio = getProjectAspectRatioClass(project.orientation, size);
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [6, -6]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), { stiffness: 300, damping: 30 });
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
+
   return (
     <motion.div
-      variants={cardHoverVariants}
-      initial="rest"
-      whileHover="hover"
-      className={cn('group relative overflow-hidden rounded-xl bg-surface border border-border', className)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformPerspective: 1200 }}
+      whileHover={{ scale: 1.015, transition: { duration: 0.35, ease: 'easeOut' } }}
+      className={cn(
+        'group relative overflow-hidden rounded-2xl bg-surface border border-border shadow-soft',
+        'transition-shadow duration-300 hover:shadow-card-hover',
+        className
+      )}
     >
       <Link href={`/projects/${project.slug}`} className="block">
         {/* Image */}
         <div className={cn('relative overflow-hidden', aspectRatio)}>
-          <motion.div variants={imageHoverVariants} className="w-full h-full">
+          <motion.div
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.07 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full h-full"
+          >
             <Image
               src={project.coverImage}
               alt={project.title}
@@ -40,16 +69,20 @@ export function ProjectCard({ project, className, priority = false, size = 'defa
             />
           </motion.div>
 
-          {/* Overlay */}
+          {/* Dark overlay — clip reveals from bottom */}
           <motion.div
             variants={overlayVariants}
-            className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"
+            initial="rest"
+            whileHover="hover"
+            className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
           />
 
-          {/* Arrow Icon */}
+          {/* Arrow icon */}
           <motion.div
-            variants={overlayVariants}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-primary flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.7 }}
+            whileHover={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25 }}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-orange-glow"
           >
             <ArrowUpRight size={16} className="text-white" />
           </motion.div>
@@ -75,7 +108,7 @@ export function ProjectCard({ project, className, priority = false, size = 'defa
                   {formatProjectContentType(project.contentType)}
                 </span>
               </div>
-              <h3 className="font-semibold text-white text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
+              <h3 className="font-semibold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
                 {project.title}
               </h3>
             </div>

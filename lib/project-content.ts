@@ -4,6 +4,18 @@ export const DRIVE_SYNC_STATUSES = ['IDLE', 'SYNCING', 'READY', 'ERROR'] as cons
 export const SOCIAL_PLATFORMS = ['youtube', 'instagram', 'tiktok', 'facebook'] as const;
 export const DEFAULT_PROJECT_DESCRIPTION = 'Project details coming soon.';
 export const DEFAULT_PROJECT_COVER_IMAGE = 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=1600&q=80&auto=format&fit=crop';
+export const SYNC_GALLERY_MIN_WIDTH = 300;
+export const SYNC_GALLERY_MIN_HEIGHT = 300;
+export const SYNC_GALLERY_MIN_PIXELS = SYNC_GALLERY_MIN_WIDTH * SYNC_GALLERY_MIN_HEIGHT;
+
+const EXCLUDED_GALLERY_NAME_PATTERN = /(avatar|profile|icon|thumb|thumbnail|preview|placeholder|default|sample)/i;
+const SUPPORTED_SYNC_GALLERY_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/jpg',
+]);
 
 export type ProjectOrientationValue = (typeof PROJECT_ORIENTATIONS)[number];
 export type ProjectContentTypeValue = (typeof PROJECT_CONTENT_TYPES)[number];
@@ -26,6 +38,11 @@ export interface ProjectDriveAsset {
   name?: string;
   mimeType?: string;
   webViewLink?: string;
+}
+
+export interface DriveAssetFilterResult {
+  assets: ProjectDriveAsset[];
+  dropped: number;
 }
 
 export interface ResolvedSocialEmbed {
@@ -98,6 +115,54 @@ export function normalizeDriveAssets(input: unknown): ProjectDriveAsset[] {
       webViewLink: typeof asset.webViewLink === 'string' ? asset.webViewLink : undefined,
     }];
   });
+}
+
+export function hasExcludedGalleryName(name?: string): boolean {
+  if (!name) return false;
+  return EXCLUDED_GALLERY_NAME_PATTERN.test(name);
+}
+
+export function isSupportedSyncGalleryMimeType(mimeType?: string): boolean {
+  if (!mimeType) return true;
+  return SUPPORTED_SYNC_GALLERY_MIME_TYPES.has(mimeType.toLowerCase());
+}
+
+export function isValidGalleryImageUrl(url: string): boolean {
+  const parsed = safeUrl(url.trim());
+  if (!parsed) return false;
+  return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+}
+
+function hasValidDimensions(width?: number, height?: number): boolean {
+  if (!width || !height) {
+    return true;
+  }
+
+  return (
+    width >= SYNC_GALLERY_MIN_WIDTH
+    && height >= SYNC_GALLERY_MIN_HEIGHT
+    && width * height >= SYNC_GALLERY_MIN_PIXELS
+  );
+}
+
+export function isProjectDriveAssetEligible(asset: ProjectDriveAsset): boolean {
+  return (
+    !!asset.id
+    && isValidGalleryImageUrl(asset.url)
+    && !hasExcludedGalleryName(asset.name)
+    && isSupportedSyncGalleryMimeType(asset.mimeType)
+    && hasValidDimensions(asset.width, asset.height)
+  );
+}
+
+export function filterProjectDriveAssets(input: unknown): DriveAssetFilterResult {
+  const normalized = normalizeDriveAssets(input);
+  const assets = normalized.filter((asset) => isProjectDriveAssetEligible(asset));
+
+  return {
+    assets,
+    dropped: normalized.length - assets.length,
+  };
 }
 
 function safeUrl(url: string): URL | null {

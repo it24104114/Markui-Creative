@@ -12,13 +12,13 @@ const stats = [
 
 export function StatsSection() {
   return (
-    <section className="section-padding border-t border-border bg-surface/30">
+    <section className="section-padding border-t border-border bg-surface/40">
       <div className="section-container">
         <SectionReveal className="text-center mb-14">
           <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">
             By the Numbers
           </p>
-          <h2 className="text-display-md font-display font-bold text-white">
+          <h2 className="text-display-md font-display font-bold text-foreground">
             Results That Speak
           </h2>
         </SectionReveal>
@@ -26,11 +26,11 @@ export function StatsSection() {
         <SectionReveal stagger className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
             <RevealItem key={stat.label}>
-              <div className="p-6 rounded-xl border border-border bg-surface text-center group hover:border-primary/30 transition-colors duration-300">
-                <div className="text-[3rem] font-display font-bold text-white mb-1 leading-none">
+              <div className="p-6 rounded-2xl border border-border bg-surface text-center group hover:border-primary/30 hover:shadow-soft transition-all duration-300">
+                <div className="text-[3rem] font-display font-bold text-foreground mb-1 leading-none">
                   <AnimatedCounter to={stat.value} suffix={stat.suffix} />
                 </div>
-                <p className="font-semibold text-white text-sm mb-1">{stat.label}</p>
+                <p className="font-semibold text-foreground text-sm mb-1">{stat.label}</p>
                 <p className="text-xs text-text-muted">{stat.description}</p>
               </div>
             </RevealItem>

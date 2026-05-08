@@ -60,14 +60,14 @@ export function ServicesSection() {
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">
               What We Do
             </p>
-            <h2 className="text-display-md font-display font-bold text-white">
+            <h2 className="text-display-md font-display font-bold text-foreground">
               Our Services
             </h2>
           </div>
           <Link
             href="/services"
             className="hidden md:inline-flex items-center gap-2 text-sm font-medium text-text-muted
-                       hover:text-white transition-colors group"
+                       hover:text-foreground transition-colors group"
           >
             All services
             <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -87,9 +87,9 @@ export function ServicesSection() {
               <RevealItem key={service.title}>
                 <Link
                   href={service.href}
-                  className="group flex flex-col p-6 rounded-xl border border-border bg-surface
+                  className="group flex flex-col p-6 rounded-2xl border border-border bg-surface
                              hover:border-[var(--service-color)] hover:bg-surface-2
-                             hover:shadow-brand transition-all duration-300"
+                             hover:shadow-soft transition-all duration-300"
                   style={{ '--service-color': service.color + '40' } as React.CSSProperties}
                 >
                   <div
@@ -98,7 +98,7 @@ export function ServicesSection() {
                   >
                     <Icon size={18} style={{ color: service.color }} />
                   </div>
-                  <h3 className="font-semibold text-white mb-2 group-hover:text-white transition-colors">
+                  <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                     {service.title}
                   </h3>
                   <p className="text-sm text-text-muted leading-relaxed flex-1">

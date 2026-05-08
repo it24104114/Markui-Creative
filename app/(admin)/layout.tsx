@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth();
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="dark flex h-screen bg-[#0D0D0D] overflow-hidden">
       <AdminSidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <AdminHeader user={session?.user} />

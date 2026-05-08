@@ -4,7 +4,11 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { listDriveFolderImages } from '@/lib/google-drive';
 import { listGooglePhotosSharedImages } from '@/lib/google-photos';
-import { extractDriveFolderId, isGooglePhotosUrl } from '@/lib/project-content';
+import {
+  extractDriveFolderId,
+  filterProjectDriveAssets,
+  isGooglePhotosUrl,
+} from '@/lib/project-content';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -46,10 +50,16 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
         throw new Error('Gallery link is not recognized. Use a Google Drive folder or public Google Photos shared link.');
       }
 
+      const { assets: filteredAssets, dropped } = filterProjectDriveAssets(galleryAssets);
+
+      if (filteredAssets.length === 0) {
+        throw new Error('No valid gallery photos found after filtering. Ensure shared photos are public and at least 300x300.');
+      }
+
       const updatedProject = await prisma.project.update({
         where: { id: project.id },
         data: {
-          driveAssets: galleryAssets as unknown as Prisma.InputJsonValue,
+          driveAssets: filteredAssets as unknown as Prisma.InputJsonValue,
           driveSyncStatus: 'READY',
           driveSyncError: null,
           driveLastSyncedAt: new Date(),
@@ -58,7 +68,9 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
 
       return NextResponse.json({
         data: {
-          count: Array.isArray(updatedProject.driveAssets) ? updatedProject.driveAssets.length : galleryAssets.length,
+          count: Array.isArray(updatedProject.driveAssets) ? updatedProject.driveAssets.length : filteredAssets.length,
+          countKept: filteredAssets.length,
+          countDropped: dropped,
         },
       });
     } catch (error) {

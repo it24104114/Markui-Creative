@@ -151,3 +151,75 @@ export const lineVariants: Variants = {
     transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 };
+
+// ─── Clip-path reveal (slide up from bottom) ────────────────────────────────
+export const clipRevealUp: Variants = {
+  hidden: { clipPath: 'inset(100% 0 0 0)', opacity: 0 },
+  visible: {
+    clipPath: 'inset(0% 0 0 0)',
+    opacity: 1,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// ─── Per-word hero text wipe ─────────────────────────────────────────────────
+export const heroWordReveal: Variants = {
+  hidden: { clipPath: 'inset(0 100% 0 0)', opacity: 0 },
+  visible: {
+    clipPath: 'inset(0 0% 0 0)',
+    opacity: 1,
+    transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// ─── Scale + fade reveal ─────────────────────────────────────────────────────
+export const scaleReveal: Variants = {
+  hidden: { opacity: 0, scale: 1.08, y: 32 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// ─── Dramatic section reveal (enhanced version of fadeInUp) ─────────────────
+export const dramaticReveal: Variants = {
+  hidden: { opacity: 0, y: 60, scale: 0.97 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// ─── Stagger container with dramatic timing ──────────────────────────────────
+export const staggerContainerDramatic: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.15,
+    },
+  },
+};
+
+// ─── Horizontal slide for editorial layouts ──────────────────────────────────
+export const slideInLeft: Variants = {
+  hidden: { opacity: 0, x: -60 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+export const slideInRight: Variants = {
+  hidden: { opacity: 0, x: 60 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
+};

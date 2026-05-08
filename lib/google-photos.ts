@@ -1,5 +1,9 @@
 import type { ProjectDriveAsset } from '@/lib/project-content';
 
+const GOOGLE_PHOTO_URL_PATTERN = /^https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9_\-./=:%?&+,;~]+$/;
+const BLOCKED_GOOGLE_PHOTO_SEGMENTS = ['/a-/', '/proxy/', '/ogw/'];
+const BLOCKED_GOOGLE_PHOTO_SIZE_HINTS = /(=s(16|24|32|40|48|64|72|96)(-c)?$)/i;
+
 function decodeGooglePhotosPayload(input: string) {
   return input
     .replace(/\\u003d/g, '=')
@@ -12,6 +16,23 @@ function normalizeGooglePhotoAssetUrl(url: string) {
   if (!trimmed) return null;
 
   return trimmed.includes('=') ? trimmed : `${trimmed}=w1600-h1600-no`;
+}
+
+function toCanonicalGooglePhotoUrl(url: string) {
+  const [base] = url.split('=');
+  return base;
+}
+
+function isGooglePhotoCandidateUrl(url: string) {
+  if (!GOOGLE_PHOTO_URL_PATTERN.test(url)) {
+    return false;
+  }
+
+  if (BLOCKED_GOOGLE_PHOTO_SEGMENTS.some((segment) => url.includes(segment))) {
+    return false;
+  }
+
+  return !BLOCKED_GOOGLE_PHOTO_SIZE_HINTS.test(url);
 }
 
 export async function listGooglePhotosSharedImages(sharedUrl: string): Promise<ProjectDriveAsset[]> {
@@ -33,13 +54,15 @@ export async function listGooglePhotosSharedImages(sharedUrl: string): Promise<P
   const uniqueUrls = Array.from(new Set(matches))
     .map((url) => normalizeGooglePhotoAssetUrl(url))
     .filter((url): url is string => !!url)
-    .filter((url) => !url.includes('/a-/') && !url.includes('googleusercontent.com/proxy/'));
+    .filter((url) => isGooglePhotoCandidateUrl(url));
 
-  if (uniqueUrls.length === 0) {
+  const dedupedUrls = Array.from(new Map(uniqueUrls.map((url) => [toCanonicalGooglePhotoUrl(url), url])).values());
+
+  if (dedupedUrls.length === 0) {
     throw new Error('No public images were found in this Google Photos link');
   }
 
-  return uniqueUrls.slice(0, 120).map((url, index) => ({
+  return dedupedUrls.slice(0, 120).map((url, index) => ({
     id: `google-photo-${index + 1}`,
     url,
     thumbnailUrl: url,
